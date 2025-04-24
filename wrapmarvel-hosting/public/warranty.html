@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>전자 보증서</title>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .section {
+      margin-bottom: 20px;
+    }
+
+    .label {
+      font-weight: bold;
+    }
+
+    .value {
+      margin-left: 10px;
+    }
+
+    #qrcode {
+      margin: 30px auto;
+      text-align: center;
+    }
+
+    .print-btn {
+      display: block;
+      margin: 30px auto;
+      padding: 12px 20px;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .print-btn:hover {
+      background-color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>랩마블 품질 보증서</h1>
+  <div id="content">
+    <div class="section"><span class="label">보증번호:</span> <span class="value" id="warrantyNumber"></span></div>
+    <div class="section"><span class="label">고객명:</span> <span class="value" id="customerName"></span></div>
+    <div class="section"><span class="label">연락처:</span> <span class="value" id="customerPhone"></span></div>
+    <div class="section"><span class="label">차량 모델:</span> <span class="value" id="carModel"></span></div>
+    <div class="section"><span class="label">차량 번호:</span> <span class="value" id="carPlate"></span></div>
+    <div class="section"><span class="label">시공점:</span> <span class="value" id="shop"></span></div>
+    <div class="section"><span class="label">시공일자:</span> <span class="value" id="installDate"></span></div>
+  </div>
+
+  <div id="qrcode"></div>
+  <button class="print-btn" onclick="window.print()">인쇄 / PDF 저장</button>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBuxPKRF6tSlVisH_u9EpsgnkCU44mmvKE",
+      authDomain: "wrapmarvel-55527.firebaseapp.com",
+      projectId: "wrapmarvel-55527",
+      storageBucket: "wrapmarvel-55527.appspot.com",
+      messagingSenderId: "218057731781",
+      appId: "G-MBR2S57MWZ"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const warrantyNumber = urlParams.get('warrantyNumber');
+
+    if (!warrantyNumber) {
+      alert('보증번호가 제공되지 않았습니다.');
+    } else {
+      db.collection("warranties").doc(warrantyNumber).get().then(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          document.getElementById("warrantyNumber").textContent = data.warrantyNumber;
+          document.getElementById("customerName").textContent = data.customerName;
+          document.getElementById("customerPhone").textContent = data.customerPhone;
+          document.getElementById("carModel").textContent = data.carModel;
+          document.getElementById("carPlate").textContent = data.carPlate;
+          document.getElementById("shop").textContent = data.shop;
+          document.getElementById("installDate").textContent = data.installDate;
+
+          // QR 코드 생성
+          QRCode.toCanvas(document.getElementById("qrcode"), window.location.href);
+        } else {
+          alert("보증서를 찾을 수 없습니다.");
+        }
+      }).catch(error => {
+        alert("데이터 조회 오류: " + error.message);
+      });
+    }
+  </script>
+</body>
+</html>
